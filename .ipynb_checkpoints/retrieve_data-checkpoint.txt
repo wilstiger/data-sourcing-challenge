@@ -1,0 +1,1159 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Import Required Libraries and Set Up Environment Variables"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "My NASA API Key: LAXDwQ95HFYBCforwRfsAjycWzbfwzGyw3nRaInF\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Dependencies\n",
+    "import requests\n",
+    "import time\n",
+    "from dotenv import load_dotenv\n",
+    "import os\n",
+    "import pandas as pd\n",
+    "import json\n",
+    "from datetime import datetime\n",
+    "\n",
+    "# Load the NASA_API_KEY from the .env file\n",
+    "load_dotenv()\n",
+    "NASA_API_KEY = os.getenv('NASA_API_KEY')\n",
+    "\n",
+    "# Print the result of the API key\n",
+    "print(f'My NASA API Key: {NASA_API_KEY}')\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### CME Data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Constructed CME API URL: https://api.nasa.gov/DONKI/CME?startDate=2013-05-01&endDate=2024-05-01&api_key=LAXDwQ95HFYBCforwRfsAjycWzbfwzGyw3nRaInF\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Set the base URL to NASA's DONKI API:\n",
+    "base_url = \"https://api.nasa.gov/DONKI/\"\n",
+    "\n",
+    "# Set the specifier for CMEs:\n",
+    "CME = \"CME\"\n",
+    "\n",
+    "# Search for CMEs published between a begin and end date\n",
+    "startDate = \"2013-05-01\"\n",
+    "endDate   = \"2024-05-01\"\n",
+    "\n",
+    "# Build URL for CME\n",
+    "query_url_CME = f\"{base_url}{CME}?startDate={startDate}&endDate={endDate}&api_key={NASA_API_KEY}\"\n",
+    "\n",
+    "# Print the constructed URL\n",
+    "print(f\"Constructed CME API URL: {query_url_CME}\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Status Code: 200\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Make a \"GET\" request for the CME URL and store it in a variable named cme_response\n",
+    "query_url_CME = f\"{base_url}{CME}?startDate={startDate}&endDate={endDate}&api_key={NASA_API_KEY}\"\n",
+    "\n",
+    "# Make a GET request for the CME URL and store it in a variable named cme_response\n",
+    "cme_response = requests.get(query_url_CME)\n",
+    "\n",
+    "# Print the status code to ensure the request was successful\n",
+    "print(f\"Status Code: {cme_response.status_code}\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Convert the response variable to json and store it as a variable named cme_json\n",
+    "cme_json = cme_response.json()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{\n",
+      "    \"activityID\": \"2013-05-01T03:12:00-CME-001\",\n",
+      "    \"catalog\": \"M2M_CATALOG\",\n",
+      "    \"startTime\": \"2013-05-01T03:12Z\",\n",
+      "    \"instruments\": [\n",
+      "        {\n",
+      "            \"displayName\": \"SOHO: LASCO/C2\"\n",
+      "        },\n",
+      "        {\n",
+      "            \"displayName\": \"SOHO: LASCO/C3\"\n",
+      "        },\n",
+      "        {\n",
+      "            \"displayName\": \"STEREO A: SECCHI/COR2\"\n",
+      "        },\n",
+      "        {\n",
+      "            \"displayName\": \"STEREO B: SECCHI/COR2\"\n",
+      "        }\n",
+      "    ],\n",
+      "    \"sourceLocation\": \"\",\n",
+      "    \"activeRegionNum\": null,\n",
+      "    \"note\": \"\",\n",
+      "    \"submissionTime\": \"2013-08-07T16:54Z\",\n",
+      "    \"versionId\": 1,\n",
+      "    \"link\": \"https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CME/2349/-1\",\n",
+      "    \"cmeAnalyses\": [\n",
+      "        {\n",
+      "            \"isMostAccurate\": true,\n",
+      "            \"time21_5\": \"2013-05-01T07:07Z\",\n",
+      "            \"latitude\": 12.0,\n",
+      "            \"longitude\": -120.0,\n",
+      "            \"halfAngle\": 36.0,\n",
+      "            \"speed\": 860.0,\n",
+      "            \"type\": \"C\",\n",
+      "            \"featureCode\": \"null\",\n",
+      "            \"imageType\": null,\n",
+      "            \"measurementTechnique\": \"null\",\n",
+      "            \"note\": \"\",\n",
+      "            \"levelOfData\": 0,\n",
+      "            \"tilt\": null,\n",
+      "            \"minorHalfWidth\": null,\n",
+      "            \"speedMeasuredAtHeight\": null,\n",
+      "            \"submissionTime\": \"2013-08-07T16:54Z\",\n",
+      "            \"link\": \"https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CMEAnalysis/2350/-1\",\n",
+      "            \"enlilList\": [\n",
+      "                {\n",
+      "                    \"modelCompletionTime\": \"2013-05-01T08:32Z\",\n",
+      "                    \"au\": 2.0,\n",
+      "                    \"estimatedShockArrivalTime\": null,\n",
+      "                    \"estimatedDuration\": null,\n",
+      "                    \"rmin_re\": null,\n",
+      "                    \"kp_18\": null,\n",
+      "                    \"kp_90\": null,\n",
+      "                    \"kp_135\": null,\n",
+      "                    \"kp_180\": null,\n",
+      "                    \"isEarthGB\": false,\n",
+      "                    \"link\": \"https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/WSA-ENLIL/2348/-1\",\n",
+      "                    \"impactList\": [\n",
+      "                        {\n",
+      "                            \"isGlancingBlow\": false,\n",
+      "                            \"location\": \"STEREO B\",\n",
+      "                            \"arrivalTime\": \"2013-05-04T06:16Z\"\n",
+      "                        }\n",
+      "                    ],\n",
+      "                    \"cmeIDs\": [\n",
+      "                        \"2013-05-01T03:12:00-CME-001\"\n",
+      "                    ]\n",
+      "                }\n",
+      "            ]\n",
+      "        }\n",
+      "    ],\n",
+      "    \"linkedEvents\": [\n",
+      "        {\n",
+      "            \"activityID\": \"2013-05-04T04:52:00-IPS-001\"\n",
+      "        }\n",
+      "    ]\n",
+      "}\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Preview the first result in JSON format\n",
+    "# Use json.dumps with argument indent=4 to format data\n",
+    "if isinstance(cme_json, list) and len(cme_json) > 0:\n",
+    "    # Print the first item in the JSON response in a formatted way\n",
+    "    print(json.dumps(cme_json[0], indent=4))\n",
+    "else:\n",
+    "    print(\"The response is either not a list or is empty.\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                    activityID          startTime  \\\n",
+      "0  2013-05-01T03:12:00-CME-001  2013-05-01T03:12Z   \n",
+      "1  2013-05-02T05:24:00-CME-001  2013-05-02T05:24Z   \n",
+      "2  2013-05-02T14:36:00-CME-001  2013-05-02T14:36Z   \n",
+      "3  2013-05-03T18:00:00-CME-001  2013-05-03T18:00Z   \n",
+      "4  2013-05-03T22:36:00-CME-001  2013-05-03T22:36Z   \n",
+      "\n",
+      "                                      linkedEvents  \n",
+      "0  [{'activityID': '2013-05-04T04:52:00-IPS-001'}]  \n",
+      "1                                             None  \n",
+      "2                                             None  \n",
+      "3                                             None  \n",
+      "4  [{'activityID': '2013-05-07T04:37:00-IPS-001'}]  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Convert cme_json to a Pandas DataFrame\n",
+    "cme_df = pd.DataFrame(cme_json)\n",
+    "\n",
+    "# Keep only the desired columns: 'activityID', 'startTime', 'linkedEvents'\n",
+    "cme_df_filtered = cme_df[['activityID', 'startTime', 'linkedEvents']]\n",
+    "\n",
+    "# Preview the DataFrame\n",
+    "print(cme_df_filtered.head())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                     activityID          startTime  \\\n",
+      "0   2013-05-01T03:12:00-CME-001  2013-05-01T03:12Z   \n",
+      "4   2013-05-03T22:36:00-CME-001  2013-05-03T22:36Z   \n",
+      "7   2013-05-09T19:29:00-CME-001  2013-05-09T19:29Z   \n",
+      "10  2013-05-13T02:54:00-CME-001  2013-05-13T02:54Z   \n",
+      "13  2013-05-13T16:18:00-CME-001  2013-05-13T16:18Z   \n",
+      "\n",
+      "                                         linkedEvents  \n",
+      "0     [{'activityID': '2013-05-04T04:52:00-IPS-001'}]  \n",
+      "4     [{'activityID': '2013-05-07T04:37:00-IPS-001'}]  \n",
+      "7     [{'activityID': '2013-05-12T23:30:00-IPS-001'}]  \n",
+      "10  [{'activityID': '2013-05-13T01:53:00-FLR-001'}...  \n",
+      "13  [{'activityID': '2013-05-13T15:40:00-FLR-001'}...  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Notice that the linkedEvents column allows us to identify the corresponding GST\n",
+    "# Remove rows with missing 'linkedEvents' since we won't be able to assign these to GSTs\n",
+    "\n",
+    "# Remove rows where 'linkedEvents' is None or an empty list\n",
+    "cme_df_cleaned = cme_df_filtered.dropna(subset=['linkedEvents'])  # Remove rows where 'linkedEvents' is None\n",
+    "cme_df_cleaned = cme_df_cleaned[cme_df_cleaned['linkedEvents'].map(lambda d: len(d) > 0)]  # Remove rows where 'linkedEvents' is an empty list\n",
+    "\n",
+    "# Preview the cleaned DataFrame\n",
+    "print(cme_df_cleaned.head())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                    activityID          startTime  \\\n",
+      "0  2013-05-01T03:12:00-CME-001  2013-05-01T03:12Z   \n",
+      "1  2013-05-03T22:36:00-CME-001  2013-05-03T22:36Z   \n",
+      "2  2013-05-09T19:29:00-CME-001  2013-05-09T19:29Z   \n",
+      "3  2013-05-13T02:54:00-CME-001  2013-05-13T02:54Z   \n",
+      "4  2013-05-13T02:54:00-CME-001  2013-05-13T02:54Z   \n",
+      "\n",
+      "                                     linkedEvent  \n",
+      "0  {'activityID': '2013-05-04T04:52:00-IPS-001'}  \n",
+      "1  {'activityID': '2013-05-07T04:37:00-IPS-001'}  \n",
+      "2  {'activityID': '2013-05-12T23:30:00-IPS-001'}  \n",
+      "3  {'activityID': '2013-05-13T01:53:00-FLR-001'}  \n",
+      "4  {'activityID': '2013-05-13T04:12:00-SEP-001'}  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Notice that the linkedEvents sometimes contains multiple events per row\n",
+    "# Write a nested for loop that iterates first over each row in the cme DataFrame (using the index)\n",
+    "# and then iterates over the values in 'linkedEvents' \n",
+    "# and adds the elements individually to a list of dictionaries where each row is one element \n",
+    "\n",
+    "# Initialize an empty list to store the expanded rows\n",
+    "expanded_rows = []\n",
+    "\n",
+    "# Iterate over each index in the DataFrame\n",
+    "for i in cme_df_cleaned.index:\n",
+    "    activityID = cme_df_cleaned.loc[i, 'activityID']  # Get the corresponding value from row i in 'activityID'\n",
+    "    startTime = cme_df_cleaned.loc[i, 'startTime']    # Get the corresponding value from row i in 'startTime'\n",
+    "    linkedEvents = cme_df_cleaned.loc[i, 'linkedEvents']  # Get the list of dictionaries from row i in 'linkedEvents'\n",
+    "\n",
+    "    # Iterate over each dictionary in the list\n",
+    "    for event in linkedEvents:\n",
+    "        # Append a new dictionary to the expanded_rows list for each dictionary item and corresponding 'activityID' and 'startTime' value\n",
+    "        expanded_rows.append({'activityID': activityID, 'startTime': startTime, 'linkedEvent': event})\n",
+    "\n",
+    "# Create a new DataFrame from the expanded rows\n",
+    "expanded_df = pd.DataFrame(expanded_rows)\n",
+    "\n",
+    "# Preview the expanded DataFrame\n",
+    "print(expanded_df.head())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2013-05-04T04:52:00-IPS-001\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Create a function called extract_activityID_from_dict that takes a dict as input such as in linkedEvents\n",
+    "# and verify below that it works as expected using one row from linkedEvents as an example\n",
+    "# Be sure to use a try and except block to handle errors\n",
+    "\n",
+    "def extract_activityID_from_dict(input_dict):\n",
+    "    try:\n",
+    "        return input_dict.get('activityID')\n",
+    "    except (TypeError, AttributeError) as e:\n",
+    "        # Log the error or print it for debugging\n",
+    "        print(f\"Error: {e}\")\n",
+    "        return None\n",
+    "\n",
+    "# Verify the function works as expected using one row from linkedEvents as an example\n",
+    "example_linked_event = cme_df_cleaned['linkedEvents'].iloc[0][0]  # Taking the first event from the first row for testing\n",
+    "print(extract_activityID_from_dict(example_linked_event))\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                     activityID          startTime  \\\n",
+      "0   2013-05-01T03:12:00-CME-001  2013-05-01T03:12Z   \n",
+      "4   2013-05-03T22:36:00-CME-001  2013-05-03T22:36Z   \n",
+      "7   2013-05-09T19:29:00-CME-001  2013-05-09T19:29Z   \n",
+      "10  2013-05-13T02:54:00-CME-001  2013-05-13T02:54Z   \n",
+      "13  2013-05-13T16:18:00-CME-001  2013-05-13T16:18Z   \n",
+      "\n",
+      "                 GST_ActivityID  \n",
+      "0   2013-05-04T04:52:00-IPS-001  \n",
+      "4   2013-05-07T04:37:00-IPS-001  \n",
+      "7   2013-05-12T23:30:00-IPS-001  \n",
+      "10  2013-05-13T01:53:00-FLR-001  \n",
+      "13  2013-05-13T15:40:00-FLR-001  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Apply this function to each row in the 'linkedEvents' column (you can use apply() and a lambda function)\n",
+    "# and create a new column called 'GST_ActivityID' using loc indexer:\n",
+    "\n",
+    "cme_df_cleaned['GST_ActivityID'] = cme_df_cleaned['linkedEvents'].apply(lambda events: extract_activityID_from_dict(events[0]) if events else None)\n",
+    "\n",
+    "# Preview the updated DataFrame\n",
+    "print(cme_df_cleaned[['activityID', 'startTime', 'GST_ActivityID']].head())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                     activityID          startTime  \\\n",
+      "0   2013-05-01T03:12:00-CME-001  2013-05-01T03:12Z   \n",
+      "4   2013-05-03T22:36:00-CME-001  2013-05-03T22:36Z   \n",
+      "7   2013-05-09T19:29:00-CME-001  2013-05-09T19:29Z   \n",
+      "10  2013-05-13T02:54:00-CME-001  2013-05-13T02:54Z   \n",
+      "13  2013-05-13T16:18:00-CME-001  2013-05-13T16:18Z   \n",
+      "\n",
+      "                 GST_ActivityID  \n",
+      "0   2013-05-04T04:52:00-IPS-001  \n",
+      "4   2013-05-07T04:37:00-IPS-001  \n",
+      "7   2013-05-12T23:30:00-IPS-001  \n",
+      "10  2013-05-13T01:53:00-FLR-001  \n",
+      "13  2013-05-13T15:40:00-FLR-001  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Remove rows with missing GST_ActivityID, since we can't assign them to GSTs:\n",
+    "cme_df_cleaned = cme_df_cleaned.dropna(subset=['GST_ActivityID'])\n",
+    "\n",
+    "# Preview the cleaned DataFrame\n",
+    "print(cme_df_cleaned[['activityID', 'startTime', 'GST_ActivityID']].head())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "activityID        object\n",
+      "startTime         object\n",
+      "linkedEvents      object\n",
+      "GST_ActivityID    object\n",
+      "dtype: object\n"
+     ]
+    }
+   ],
+   "source": [
+    "# print out the datatype of each column in this DataFrame:\n",
+    "print(cme_df_cleaned.dtypes)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "cmeID                          object\n",
+      "startTime_CME     datetime64[ns, UTC]\n",
+      "GST_ActivityID                 object\n",
+      "dtype: object\n",
+      "                          cmeID             startTime_CME  \\\n",
+      "0   2013-05-01T03:12:00-CME-001 2013-05-01 03:12:00+00:00   \n",
+      "4   2013-05-03T22:36:00-CME-001 2013-05-03 22:36:00+00:00   \n",
+      "7   2013-05-09T19:29:00-CME-001 2013-05-09 19:29:00+00:00   \n",
+      "10  2013-05-13T02:54:00-CME-001 2013-05-13 02:54:00+00:00   \n",
+      "13  2013-05-13T16:18:00-CME-001 2013-05-13 16:18:00+00:00   \n",
+      "\n",
+      "                 GST_ActivityID  \n",
+      "0   2013-05-04T04:52:00-IPS-001  \n",
+      "4   2013-05-07T04:37:00-IPS-001  \n",
+      "7   2013-05-12T23:30:00-IPS-001  \n",
+      "10  2013-05-13T01:53:00-FLR-001  \n",
+      "13  2013-05-13T15:40:00-FLR-001  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Convert the 'GST_ActivityID' column to string format\n",
+    "cme_df_cleaned['GST_ActivityID'] = cme_df_cleaned['GST_ActivityID'].astype(str)\n",
+    "\n",
+    "# Convert startTime to datetime format\n",
+    "cme_df_cleaned['startTime'] = pd.to_datetime(cme_df_cleaned['startTime'], utc=True)\n",
+    "\n",
+    "# Rename startTime to startTime_CME and activityID to cmeID\n",
+    "cme_df_cleaned.rename(columns={'startTime': 'startTime_CME', 'activityID': 'cmeID'}, inplace=True)\n",
+    "\n",
+    "# Drop linkedEvents column\n",
+    "cme_df_cleaned.drop(columns=['linkedEvents'], inplace=True)\n",
+    "\n",
+    "# Verify that all steps were executed correctly\n",
+    "print(cme_df_cleaned.dtypes)\n",
+    "print(cme_df_cleaned.head())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                            cmeID             startTime_CME  \\\n",
+      "26    2013-06-02T20:24:00-CME-001 2013-06-02 20:24:00+00:00   \n",
+      "1358  2015-09-04T14:12:00-CME-001 2015-09-04 14:12:00+00:00   \n",
+      "1359  2015-09-04T19:24:00-CME-001 2015-09-04 19:24:00+00:00   \n",
+      "1361  2015-09-06T23:30:00-CME-001 2015-09-06 23:30:00+00:00   \n",
+      "1362  2015-09-07T10:36:00-CME-001 2015-09-07 10:36:00+00:00   \n",
+      "\n",
+      "                   GST_ActivityID  \n",
+      "26    2013-06-07T03:00:00-GST-001  \n",
+      "1358  2015-09-09T03:00:00-GST-001  \n",
+      "1359  2015-09-09T03:00:00-GST-001  \n",
+      "1361  2015-09-11T06:00:00-GST-001  \n",
+      "1362  2015-09-11T06:00:00-GST-001  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# We are only interested in CMEs related to GSTs so keep only rows where the GST_ActivityID column contains 'GST'\n",
+    "# use the method 'contains()' from the str library.\n",
+    "\n",
+    "cme_gst_df = cme_df_cleaned[cme_df_cleaned['GST_ActivityID'].str.contains('GST', na=False)]\n",
+    "\n",
+    "# Preview the filtered DataFrame\n",
+    "print(cme_gst_df.head())\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### GST Data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "https://api.nasa.gov/DONKI/GST?startDate=2013-05-01&endDate=2024-05-01&api_key=LAXDwQ95HFYBCforwRfsAjycWzbfwzGyw3nRaInF\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Set the base URL to NASA's DONKI API:\n",
+    "base_url = \"https://api.nasa.gov/DONKI/\"\n",
+    "\n",
+    "# Set the specifier for Geomagnetic Storms (GST):\n",
+    "GST = \"GST\"\n",
+    "\n",
+    "# Search for GSTs between a begin and end date\n",
+    "startDate = \"2013-05-01\"\n",
+    "endDate   = \"2024-05-01\"\n",
+    "\n",
+    "# Build URL for GST\n",
+    "query_url_GST = f\"{base_url}{GST}?startDate={startDate}&endDate={endDate}&api_key={NASA_API_KEY}\"\n",
+    "\n",
+    "# Print the constructed URL\n",
+    "print(query_url_GST)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Status Code: 200\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Make a \"GET\" request for the GST URL and store it in a variable named gst_response\n",
+    "gst_response = requests.get(query_url_GST)\n",
+    "\n",
+    "# Print the status code to verify the request was successful\n",
+    "print(f\"Status Code: {gst_response.status_code}\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{\n",
+      "    \"gstID\": \"2013-06-01T01:00:00-GST-001\",\n",
+      "    \"startTime\": \"2013-06-01T01:00Z\",\n",
+      "    \"allKpIndex\": [\n",
+      "        {\n",
+      "            \"observedTime\": \"2013-06-01T01:00Z\",\n",
+      "            \"kpIndex\": 6.0,\n",
+      "            \"source\": \"NOAA\"\n",
+      "        }\n",
+      "    ],\n",
+      "    \"link\": \"https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/GST/326/-1\",\n",
+      "    \"linkedEvents\": [\n",
+      "        {\n",
+      "            \"activityID\": \"2013-05-31T15:45:00-HSS-001\"\n",
+      "        }\n",
+      "    ],\n",
+      "    \"submissionTime\": \"2013-07-15T19:26Z\",\n",
+      "    \"versionId\": 1\n",
+      "}\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Convert the response variable to json and store it as a variable named gst_json\n",
+    "gst_json = gst_response.json()\n",
+    "\n",
+    "# Preview the first result in JSON format\n",
+    "# Use json.dumps with argument indent=4 to format data\n",
+    "print(json.dumps(gst_json[0], indent=4))\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                         gstID          startTime  \\\n",
+      "0  2013-06-01T01:00:00-GST-001  2013-06-01T01:00Z   \n",
+      "1  2013-06-07T03:00:00-GST-001  2013-06-07T03:00Z   \n",
+      "2  2013-06-29T03:00:00-GST-001  2013-06-29T03:00Z   \n",
+      "3  2013-10-02T03:00:00-GST-001  2013-10-02T03:00Z   \n",
+      "4  2013-12-08T00:00:00-GST-001  2013-12-08T00:00Z   \n",
+      "\n",
+      "                                        linkedEvents  \n",
+      "0    [{'activityID': '2013-05-31T15:45:00-HSS-001'}]  \n",
+      "1    [{'activityID': '2013-06-02T20:24:00-CME-001'}]  \n",
+      "2                                               None  \n",
+      "3  [{'activityID': '2013-09-29T22:40:00-CME-001'}...  \n",
+      "4  [{'activityID': '2013-12-04T23:12:00-CME-001'}...  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Convert gst_json to a Pandas DataFrame\n",
+    "gst_df = pd.DataFrame(gst_json)\n",
+    "\n",
+    "# Keep only the columns: activityID, startTime, linkedEvents\n",
+    "gst_df_filtered = gst_df[['gstID', 'startTime', 'linkedEvents']]\n",
+    "\n",
+    "# Preview the filtered DataFrame\n",
+    "print(gst_df_filtered.head())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                         gstID          startTime  \\\n",
+      "0  2013-06-01T01:00:00-GST-001  2013-06-01T01:00Z   \n",
+      "1  2013-06-07T03:00:00-GST-001  2013-06-07T03:00Z   \n",
+      "3  2013-10-02T03:00:00-GST-001  2013-10-02T03:00Z   \n",
+      "4  2013-12-08T00:00:00-GST-001  2013-12-08T00:00Z   \n",
+      "5  2014-02-19T03:00:00-GST-001  2014-02-19T03:00Z   \n",
+      "\n",
+      "                                        linkedEvents  \n",
+      "0    [{'activityID': '2013-05-31T15:45:00-HSS-001'}]  \n",
+      "1    [{'activityID': '2013-06-02T20:24:00-CME-001'}]  \n",
+      "3  [{'activityID': '2013-09-29T22:40:00-CME-001'}...  \n",
+      "4  [{'activityID': '2013-12-04T23:12:00-CME-001'}...  \n",
+      "5  [{'activityID': '2014-02-16T14:15:00-CME-001'}...  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Notice that the linkedEvents column allows us to identify the corresponding CME\n",
+    "# Remove rows with missing 'linkedEvents' since we won't be able to assign these to CME\n",
+    "gst_df_cleaned = gst_df_filtered.dropna(subset=['linkedEvents'])  # Remove rows where 'linkedEvents' is None\n",
+    "gst_df_cleaned = gst_df_cleaned[gst_df_cleaned['linkedEvents'].map(lambda d: len(d) > 0)]  # Remove rows where 'linkedEvents' is an empty list\n",
+    "\n",
+    "# Preview the cleaned DataFrame\n",
+    "print(gst_df_cleaned.head())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                         gstID          startTime  \\\n",
+      "0  2013-06-01T01:00:00-GST-001  2013-06-01T01:00Z   \n",
+      "1  2013-06-07T03:00:00-GST-001  2013-06-07T03:00Z   \n",
+      "2  2013-10-02T03:00:00-GST-001  2013-10-02T03:00Z   \n",
+      "3  2013-10-02T03:00:00-GST-001  2013-10-02T03:00Z   \n",
+      "4  2013-10-02T03:00:00-GST-001  2013-10-02T03:00Z   \n",
+      "\n",
+      "                                    linkedEvents  \n",
+      "0  {'activityID': '2013-05-31T15:45:00-HSS-001'}  \n",
+      "1  {'activityID': '2013-06-02T20:24:00-CME-001'}  \n",
+      "2  {'activityID': '2013-09-29T22:40:00-CME-001'}  \n",
+      "3  {'activityID': '2013-10-02T01:54:00-IPS-001'}  \n",
+      "4  {'activityID': '2013-10-02T02:47:00-MPC-001'}  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Notice that the linkedEvents sometimes contains multiple events per row\n",
+    "# Use the explode method to ensure that each row is one element. Ensure to reset the index and drop missing values.\n",
+    "\n",
+    "# Use explode to expand the linkedEvents, reset the index, and drop missing values\n",
+    "gst_df_exploded = gst_df_cleaned.explode('linkedEvents').reset_index(drop=True)\n",
+    "\n",
+    "# Drop any rows where linkedEvents is still missing after the explode operation\n",
+    "gst_df_exploded.dropna(subset=['linkedEvents'], inplace=True)\n",
+    "\n",
+    "# Preview the exploded DataFrame\n",
+    "print(gst_df_exploded.head())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                         gstID          startTime               CME_ActivityID\n",
+      "0  2013-06-01T01:00:00-GST-001  2013-06-01T01:00Z  2013-05-31T15:45:00-HSS-001\n",
+      "1  2013-06-07T03:00:00-GST-001  2013-06-07T03:00Z  2013-06-02T20:24:00-CME-001\n",
+      "2  2013-10-02T03:00:00-GST-001  2013-10-02T03:00Z  2013-09-29T22:40:00-CME-001\n",
+      "3  2013-10-02T03:00:00-GST-001  2013-10-02T03:00Z  2013-10-02T01:54:00-IPS-001\n",
+      "4  2013-10-02T03:00:00-GST-001  2013-10-02T03:00Z  2013-10-02T02:47:00-MPC-001\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Apply the extract_activityID_from_dict function to each row in the 'linkedEvents' column (you can use apply() and a lambda function)\n",
+    "# and create a new column called 'CME_ActivityID' using loc indexer:\n",
+    "\n",
+    "gst_df_exploded['CME_ActivityID'] = gst_df_exploded['linkedEvents'].apply(lambda event: extract_activityID_from_dict(event))\n",
+    "\n",
+    "# Remove rows with missing CME_ActivityID, since we can't assign them to CMEs:\n",
+    "gst_df_exploded = gst_df_exploded.dropna(subset=['CME_ActivityID'])\n",
+    "\n",
+    "# Preview the updated DataFrame\n",
+    "print(gst_df_exploded[['gstID', 'startTime', 'CME_ActivityID']].head())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "gstID                          object\n",
+      "startTime_GST     datetime64[ns, UTC]\n",
+      "CME_ActivityID                 object\n",
+      "dtype: object\n",
+      "                         gstID             startTime_GST  \\\n",
+      "0  2013-06-01T01:00:00-GST-001 2013-06-01 01:00:00+00:00   \n",
+      "1  2013-06-07T03:00:00-GST-001 2013-06-07 03:00:00+00:00   \n",
+      "2  2013-10-02T03:00:00-GST-001 2013-10-02 03:00:00+00:00   \n",
+      "3  2013-10-02T03:00:00-GST-001 2013-10-02 03:00:00+00:00   \n",
+      "4  2013-10-02T03:00:00-GST-001 2013-10-02 03:00:00+00:00   \n",
+      "\n",
+      "                CME_ActivityID  \n",
+      "0  2013-05-31T15:45:00-HSS-001  \n",
+      "1  2013-06-02T20:24:00-CME-001  \n",
+      "2  2013-09-29T22:40:00-CME-001  \n",
+      "3  2013-10-02T01:54:00-IPS-001  \n",
+      "4  2013-10-02T02:47:00-MPC-001  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Convert the 'CME_ActivityID' column to string format\n",
+    "gst_df_exploded['CME_ActivityID'] = gst_df_exploded['CME_ActivityID'].astype(str)\n",
+    "\n",
+    "# Convert the 'gstID' column to string format\n",
+    "gst_df_exploded['gstID'] = gst_df_exploded['gstID'].astype(str)\n",
+    "\n",
+    "# Convert startTime to datetime format\n",
+    "gst_df_exploded['startTime'] = pd.to_datetime(gst_df_exploded['startTime'], utc=True)\n",
+    "\n",
+    "# Rename startTime to startTime_GST\n",
+    "gst_df_exploded.rename(columns={'startTime': 'startTime_GST'}, inplace=True)\n",
+    "\n",
+    "# Drop linkedEvents column\n",
+    "gst_df_exploded.drop(columns=['linkedEvents'], inplace=True)\n",
+    "\n",
+    "# Verify that all steps were executed correctly\n",
+    "print(gst_df_exploded.dtypes)\n",
+    "print(gst_df_exploded.head())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>gstID</th>\n",
+       "      <th>startTime_GST</th>\n",
+       "      <th>CME_ActivityID</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2013-06-07T03:00:00-GST-001</td>\n",
+       "      <td>2013-06-07 03:00:00+00:00</td>\n",
+       "      <td>2013-06-02T20:24:00-CME-001</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2013-10-02T03:00:00-GST-001</td>\n",
+       "      <td>2013-10-02 03:00:00+00:00</td>\n",
+       "      <td>2013-09-29T22:40:00-CME-001</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5</th>\n",
+       "      <td>2013-12-08T00:00:00-GST-001</td>\n",
+       "      <td>2013-12-08 00:00:00+00:00</td>\n",
+       "      <td>2013-12-04T23:12:00-CME-001</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7</th>\n",
+       "      <td>2014-02-19T03:00:00-GST-001</td>\n",
+       "      <td>2014-02-19 03:00:00+00:00</td>\n",
+       "      <td>2014-02-16T14:15:00-CME-001</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9</th>\n",
+       "      <td>2014-02-20T03:00:00-GST-001</td>\n",
+       "      <td>2014-02-20 03:00:00+00:00</td>\n",
+       "      <td>2014-02-18T01:25:00-CME-001</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                         gstID             startTime_GST  \\\n",
+       "1  2013-06-07T03:00:00-GST-001 2013-06-07 03:00:00+00:00   \n",
+       "2  2013-10-02T03:00:00-GST-001 2013-10-02 03:00:00+00:00   \n",
+       "5  2013-12-08T00:00:00-GST-001 2013-12-08 00:00:00+00:00   \n",
+       "7  2014-02-19T03:00:00-GST-001 2014-02-19 03:00:00+00:00   \n",
+       "9  2014-02-20T03:00:00-GST-001 2014-02-20 03:00:00+00:00   \n",
+       "\n",
+       "                CME_ActivityID  \n",
+       "1  2013-06-02T20:24:00-CME-001  \n",
+       "2  2013-09-29T22:40:00-CME-001  \n",
+       "5  2013-12-04T23:12:00-CME-001  \n",
+       "7  2014-02-16T14:15:00-CME-001  \n",
+       "9  2014-02-18T01:25:00-CME-001  "
+      ]
+     },
+     "execution_count": 23,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# We are only interested in GSTs related to CMEs so keep only rows where the CME_ActivityID column contains 'CME'\n",
+    "# use the method 'contains()' from the str library.  \n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Merge both datatsets"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                         gstID             startTime_GST  \\\n",
+      "0  2013-06-07T03:00:00-GST-001 2013-06-07 03:00:00+00:00   \n",
+      "1  2015-09-09T03:00:00-GST-001 2015-09-09 03:00:00+00:00   \n",
+      "2  2015-09-09T03:00:00-GST-001 2015-09-09 03:00:00+00:00   \n",
+      "3  2015-09-11T06:00:00-GST-001 2015-09-11 06:00:00+00:00   \n",
+      "4  2015-09-11T06:00:00-GST-001 2015-09-11 06:00:00+00:00   \n",
+      "\n",
+      "                CME_ActivityID                        cmeID  \\\n",
+      "0  2013-06-02T20:24:00-CME-001  2013-06-02T20:24:00-CME-001   \n",
+      "1  2015-09-04T14:12:00-CME-001  2015-09-04T14:12:00-CME-001   \n",
+      "2  2015-09-04T19:24:00-CME-001  2015-09-04T19:24:00-CME-001   \n",
+      "3  2015-09-06T23:30:00-CME-001  2015-09-06T23:30:00-CME-001   \n",
+      "4  2015-09-07T10:36:00-CME-001  2015-09-07T10:36:00-CME-001   \n",
+      "\n",
+      "              startTime_CME               GST_ActivityID  \n",
+      "0 2013-06-02 20:24:00+00:00  2013-06-07T03:00:00-GST-001  \n",
+      "1 2015-09-04 14:12:00+00:00  2015-09-09T03:00:00-GST-001  \n",
+      "2 2015-09-04 19:24:00+00:00  2015-09-09T03:00:00-GST-001  \n",
+      "3 2015-09-06 23:30:00+00:00  2015-09-11T06:00:00-GST-001  \n",
+      "4 2015-09-07 10:36:00+00:00  2015-09-11T06:00:00-GST-001  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Now merge both datasets using 'gstID' and 'CME_ActivityID' for gst and 'GST_ActivityID' and 'cmeID' for cme. Use the 'left_on' and 'right_on' specifiers.\n",
+    "merged_df = pd.merge(\n",
+    "    gst_df_exploded, cme_df_cleaned,\n",
+    "    left_on=['gstID', 'CME_ActivityID'],  # Columns from GST DataFrame\n",
+    "    right_on=['GST_ActivityID', 'cmeID'],  # Columns from CME DataFrame\n",
+    "    how='inner'  # You can change 'inner' to 'outer' or 'left' depending on the merge behavior you need\n",
+    ")\n",
+    "\n",
+    "# Preview the merged DataFrame\n",
+    "print(merged_df.head())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of rows in CME DataFrame: 1023\n",
+      "Number of rows in GST DataFrame: 205\n",
+      "Number of rows in Merged DataFrame: 6\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Verify that the new DataFrame has the same number of rows as cme and gst\n",
+    "\n",
+    "# Print the number of rows in the original DataFrames\n",
+    "print(f\"Number of rows in CME DataFrame: {len(cme_df_cleaned)}\")\n",
+    "print(f\"Number of rows in GST DataFrame: {len(gst_df_exploded)}\")\n",
+    "\n",
+    "# Print the number of rows in the merged DataFrame\n",
+    "print(f\"Number of rows in Merged DataFrame: {len(merged_df)}\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Computing the time it takes for a CME to cause a GST"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                         gstID             startTime_GST  \\\n",
+      "0  2013-06-07T03:00:00-GST-001 2013-06-07 03:00:00+00:00   \n",
+      "1  2015-09-09T03:00:00-GST-001 2015-09-09 03:00:00+00:00   \n",
+      "2  2015-09-09T03:00:00-GST-001 2015-09-09 03:00:00+00:00   \n",
+      "3  2015-09-11T06:00:00-GST-001 2015-09-11 06:00:00+00:00   \n",
+      "4  2015-09-11T06:00:00-GST-001 2015-09-11 06:00:00+00:00   \n",
+      "\n",
+      "                CME_ActivityID                        cmeID  \\\n",
+      "0  2013-06-02T20:24:00-CME-001  2013-06-02T20:24:00-CME-001   \n",
+      "1  2015-09-04T14:12:00-CME-001  2015-09-04T14:12:00-CME-001   \n",
+      "2  2015-09-04T19:24:00-CME-001  2015-09-04T19:24:00-CME-001   \n",
+      "3  2015-09-06T23:30:00-CME-001  2015-09-06T23:30:00-CME-001   \n",
+      "4  2015-09-07T10:36:00-CME-001  2015-09-07T10:36:00-CME-001   \n",
+      "\n",
+      "              startTime_CME               GST_ActivityID        timeDiff  \n",
+      "0 2013-06-02 20:24:00+00:00  2013-06-07T03:00:00-GST-001 4 days 06:36:00  \n",
+      "1 2015-09-04 14:12:00+00:00  2015-09-09T03:00:00-GST-001 4 days 12:48:00  \n",
+      "2 2015-09-04 19:24:00+00:00  2015-09-09T03:00:00-GST-001 4 days 07:36:00  \n",
+      "3 2015-09-06 23:30:00+00:00  2015-09-11T06:00:00-GST-001 4 days 06:30:00  \n",
+      "4 2015-09-07 10:36:00+00:00  2015-09-11T06:00:00-GST-001 3 days 19:24:00  \n"
+     ]
+    }
+   ],
+   "source": [
+    "# Compute the time diff between startTime_GST and startTime_CME by creating a new column called `timeDiff`.\n",
+    "# Create a new column called 'timeDiff'\n",
+    "merged_df['timeDiff'] = merged_df['startTime_GST'] - merged_df['startTime_CME']\n",
+    "\n",
+    "# Preview the DataFrame with the new 'timeDiff' column\n",
+    "print(merged_df[['gstID', 'startTime_GST', 'CME_ActivityID', 'cmeID', 'startTime_CME', 'GST_ActivityID', 'timeDiff']].head())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "count                            6\n",
+      "mean               3 days 18:31:00\n",
+      "std      1 days 04:10:07.703849362\n",
+      "min                1 days 10:12:00\n",
+      "25%                3 days 22:10:30\n",
+      "50%                4 days 06:33:00\n",
+      "75%                4 days 07:21:00\n",
+      "max                4 days 12:48:00\n",
+      "Name: timeDiff, dtype: object\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Use describe() to compute the mean and median time\n",
+    "# that it takes for a CME to cause a GST.\n",
+    "\n",
+    "time_diff_description = merged_df['timeDiff'].describe()\n",
+    "\n",
+    "# Display the descriptive statistics for timeDiff\n",
+    "print(time_diff_description)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Exporting data in csv format"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Data exported to 'merged_data.csv' successfully.\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Export data to CSV without the index\n",
+    "merged_df.to_csv('merged_data.csv', index=False)\n",
+    "\n",
+    "# Confirmation message\n",
+    "print(\"Data exported to 'merged_data.csv' successfully.\")\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.14"
+  },
+  "varInspector": {
+   "cols": {
+    "lenName": 16,
+    "lenType": 16,
+    "lenVar": 40
+   },
+   "kernels_config": {
+    "python": {
+     "delete_cmd_postfix": "",
+     "delete_cmd_prefix": "del ",
+     "library": "var_list.py",
+     "varRefreshCmd": "print(var_dic_list())"
+    },
+    "r": {
+     "delete_cmd_postfix": ") ",
+     "delete_cmd_prefix": "rm(",
+     "library": "var_list.r",
+     "varRefreshCmd": "cat(var_dic_list()) "
+    }
+   },
+   "types_to_exclude": [
+    "module",
+    "function",
+    "builtin_function_or_method",
+    "instance",
+    "_Feature"
+   ],
+   "window_display": false
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
